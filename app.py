@@ -219,18 +219,18 @@ def defeated():
 def timer():
     """Workout-Timer mit Übungsanleitung."""
     workouts_list = [
-        {"id": "w1t1", "name": "Odin", "icon": "🦅", "week": "Woche 1 – Tag 1"},
-        {"id": "w1t2", "name": "Thor", "icon": "⚡", "week": "Woche 1 – Tag 2"},
-        {"id": "w1t3", "name": "Freya", "icon": "🌙", "week": "Woche 1 – Tag 3"},
-        {"id": "w2t1", "name": "Loki", "icon": "🔥", "week": "Woche 2 – Tag 1"},
-        {"id": "w2t2", "name": "Tyr", "icon": "🛡️", "week": "Woche 2 – Tag 2"},
-        {"id": "w2t3", "name": "Heimdall", "icon": "👁️", "week": "Woche 2 – Tag 3"},
-        {"id": "w3t1", "name": "Valkyrie", "icon": "⚔️", "week": "Woche 3 – Tag 1"},
-        {"id": "w3t2", "name": "Baldr", "icon": "☀️", "week": "Woche 3 – Tag 2"},
-        {"id": "w3t3", "name": "Thor+", "icon": "⚡", "week": "Woche 3 – Tag 3"},
-        {"id": "w4t1", "name": "Odin+", "icon": "🦅", "week": "Woche 4 – Tag 1"},
-        {"id": "w4t2", "name": "Loki+", "icon": "🔥", "week": "Woche 4 – Tag 2"},
-        {"id": "w4t3", "name": "Freya+", "icon": "🌙", "week": "Woche 4 – Tag 3"},
+        {"id": "w1t1", "name": "Odin", "image": "Odin.png", "week": "Woche 1 – Tag 1"},
+        {"id": "w1t2", "name": "Thor", "image": "Thor.png", "week": "Woche 1 – Tag 2"},
+        {"id": "w1t3", "name": "Freya", "image": "Freya.png", "week": "Woche 1 – Tag 3"},
+        {"id": "w2t1", "name": "Loki", "image": "Loki.png", "week": "Woche 2 – Tag 1"},
+        {"id": "w2t2", "name": "Tyr", "image": "Tyr.png", "week": "Woche 2 – Tag 2"},
+        {"id": "w2t3", "name": "Heimdall", "image": "Heimdall.png", "week": "Woche 2 – Tag 3"},
+        {"id": "w3t1", "name": "Valkyrie", "image": "Valkyrie.png", "week": "Woche 3 – Tag 1"},
+        {"id": "w3t2", "name": "Baldr", "image": "Baldr.png", "week": "Woche 3 – Tag 2"},
+        {"id": "w3t3", "name": "Thor+", "image": "Thor.png", "week": "Woche 3 – Tag 3"},
+        {"id": "w4t1", "name": "Odin+", "image": "Odin.png", "week": "Woche 4 – Tag 1"},
+        {"id": "w4t2", "name": "Loki+", "image": "Loki.png", "week": "Woche 4 – Tag 2"},
+        {"id": "w4t3", "name": "Freya+", "image": "Freya.png", "week": "Woche 4 – Tag 3"},
     ]
 
     workouts_json = json.dumps(WORKOUT_DATA, ensure_ascii=False)

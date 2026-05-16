@@ -15,16 +15,19 @@
 
     <div class="workout-grid">
         {% for workout in workouts %}
-        <button class="workout-btn" onclick="selectWorkout('{{ workout.id }}')">
-            <span class="workout-icon">{{ workout.icon }}</span>
-            <span class="workout-name">{{ workout.name }}</span>
-            <span class="workout-week">{{ workout.week }}</span>
+        <button class="workout-btn" onclick="selectWorkout('{{ workout.id }}')" style="background-image: url('/static/img/{{ workout.image }}');">
+            <div class="workout-overlay">
+                <span class="workout-name">{{ workout.name }}</span>
+                <span class="workout-week">{{ workout.week }}</span>
+            </div>
         </button>
         {% endfor %}
         <button class="workout-btn free-btn" onclick="selectWorkout('free')">
-            <span class="workout-icon">🕐</span>
-            <span class="workout-name">Freies Training</span>
-            <span class="workout-week">45 Min Timer</span>
+            <div class="workout-overlay">
+                <span class="workout-icon">🕐</span>
+                <span class="workout-name">Freies Training</span>
+                <span class="workout-week">45 Min Timer</span>
+            </div>
         </button>
     </div>
 </div>
@@ -309,37 +312,56 @@ function formatTime(seconds) {
     }
 
     .workout-btn {
+        position: relative;
         display: flex;
         flex-direction: column;
         align-items: center;
-        padding: 1rem 0.5rem;
-        background: #1a1a1a;
-        border: 1px solid #3a2a1a;
+        justify-content: flex-end;
+        padding: 0;
+        background-size: cover;
+        background-position: center;
+        background-repeat: no-repeat;
+        border: 2px solid #3a2a1a;
         border-radius: 12px;
         cursor: pointer;
         transition: all 0.2s;
         color: var(--text);
+        min-height: 160px;
+        overflow: hidden;
     }
 
     .workout-btn:hover {
         border-color: #c9a227;
-        box-shadow: 0 0 12px rgba(201, 162, 39, 0.3);
+        box-shadow: 0 0 16px rgba(201, 162, 39, 0.4);
         transform: translateY(-2px);
     }
 
     .workout-btn.free-btn {
-        grid-column: 1 / -1;
+        background: linear-gradient(135deg, #1a2a2a, #0a1a1a);
         border-color: #4ecdc4;
+        min-height: 80px;
+        justify-content: center;
+        grid-column: 1 / -1;
     }
 
     .workout-btn.free-btn:hover {
         border-color: #4ecdc4;
-        box-shadow: 0 0 12px rgba(78, 205, 196, 0.3);
+        box-shadow: 0 0 16px rgba(78, 205, 196, 0.4);
+    }
+
+    .workout-overlay {
+        width: 100%;
+        padding: 0.75rem;
+        background: linear-gradient(transparent, rgba(0,0,0,0.85) 30%);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
     }
 
     .workout-icon { font-size: 1.8rem; margin-bottom: 0.3rem; }
-    .workout-name { font-weight: 700; font-size: 0.9rem; }
-    .workout-week { font-size: 0.7rem; color: var(--text-muted); margin-top: 0.2rem; }
+    .workout-name { font-weight: 700; font-size: 1rem; text-shadow: 0 1px 4px rgba(0,0,0,0.8); }
+    .workout-week { font-size: 0.7rem; color: #c9a227; margin-top: 0.2rem; text-shadow: 0 1px 3px rgba(0,0,0,0.8); }
 
     .timer-clock {
         text-align: center;
