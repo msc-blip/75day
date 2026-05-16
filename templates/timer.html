@@ -1,0 +1,464 @@
+{% extends "base.html" %}
+
+{% block content %}
+<nav>
+    <a href="/">Heute</a>
+    <a href="/schlachtfeld">⚔️ Schlachtfeld</a>
+    <a href="/timer" class="active">⏱️ Timer</a>
+    <a href="/history">Verlauf</a>
+</nav>
+
+<!-- Workout Auswahl -->
+<div id="workout-select" class="card viking-card">
+    <h3 class="viking-title">⚔️ Wähle dein Workout</h3>
+    <p class="viking-subtitle" style="margin-bottom: 1.5rem;">Welcher Gott führt dich heute in die Schlacht?</p>
+
+    <div class="workout-grid">
+        {% for workout in workouts %}
+        <button class="workout-btn" onclick="selectWorkout('{{ workout.id }}')">
+            <span class="workout-icon">{{ workout.icon }}</span>
+            <span class="workout-name">{{ workout.name }}</span>
+            <span class="workout-week">{{ workout.week }}</span>
+        </button>
+        {% endfor %}
+        <button class="workout-btn free-btn" onclick="selectWorkout('free')">
+            <span class="workout-icon">🕐</span>
+            <span class="workout-name">Freies Training</span>
+            <span class="workout-week">45 Min Timer</span>
+        </button>
+    </div>
+</div>
+
+<!-- Timer Ansicht (versteckt bis Workout gewählt) -->
+<div id="timer-view" class="card viking-card" style="display: none;">
+    <!-- Große Uhr -->
+    <div class="timer-clock">
+        <div class="timer-phase" id="timer-phase">BEREIT</div>
+        <div class="timer-display" id="timer-display">45:00</div>
+        <div class="timer-total">
+            Gesamt: <span id="timer-total-elapsed">00:00</span> / 45:00
+        </div>
+    </div>
+
+    <!-- Fortschrittsbalken -->
+    <div class="timer-progress">
+        <div class="timer-progress-fill" id="timer-progress-fill"></div>
+    </div>
+
+    <!-- Aktuelle Übung -->
+    <div class="timer-exercise" id="timer-exercise">
+        <div class="exercise-label">Aktuelle Übung</div>
+        <div class="exercise-name" id="exercise-name">–</div>
+        <div class="exercise-detail" id="exercise-detail"></div>
+    </div>
+
+    <!-- Nächste Übung -->
+    <div class="timer-next" id="timer-next">
+        <span class="next-label">Nächste:</span>
+        <span class="next-name" id="next-exercise-name">–</span>
+    </div>
+
+    <!-- Runden-Info -->
+    <div class="timer-rounds" id="timer-rounds" style="display: none;">
+        <span>Runde <span id="current-round">1</span> / <span id="total-rounds">3</span></span>
+    </div>
+
+    <!-- Steuerung -->
+    <div class="timer-controls">
+        <button class="btn-timer btn-start" id="btn-start" onclick="startTimer()">▶ Start</button>
+        <button class="btn-timer btn-pause" id="btn-pause" onclick="pauseTimer()" style="display:none;">⏸ Pause</button>
+        <button class="btn-timer btn-resume" id="btn-resume" onclick="resumeTimer()" style="display:none;">▶ Weiter</button>
+        <button class="btn-timer btn-skip" id="btn-skip" onclick="skipExercise()">⏭ Überspringen</button>
+        <button class="btn-timer btn-stop" id="btn-stop" onclick="stopTimer()">⏹ Beenden</button>
+    </div>
+</div>
+
+<!-- Audio Context für Sounds -->
+<script>
+let audioCtx = null;
+
+function initAudio() {
+    if (!audioCtx) {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    }
+}
+
+function playBeep(freq, duration, type = 'sine') {
+    initAudio();
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    osc.connect(gain);
+    gain.connect(audioCtx.destination);
+    osc.frequency.value = freq;
+    osc.type = type;
+    gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + duration);
+    osc.start(audioCtx.currentTime);
+    osc.stop(audioCtx.currentTime + duration);
+}
+
+function soundPhaseChange() {
+    playBeep(880, 0.3);
+    setTimeout(() => playBeep(1100, 0.3), 150);
+    setTimeout(() => playBeep(1320, 0.4), 300);
+}
+
+function soundExerciseChange() {
+    playBeep(660, 0.2);
+    setTimeout(() => playBeep(880, 0.2), 100);
+}
+
+function soundCountdown() {
+    playBeep(440, 0.15);
+}
+
+function soundComplete() {
+    playBeep(523, 0.2);
+    setTimeout(() => playBeep(659, 0.2), 150);
+    setTimeout(() => playBeep(784, 0.2), 300);
+    setTimeout(() => playBeep(1047, 0.5), 450);
+}
+
+function soundFail() {
+    playBeep(200, 0.5, 'sawtooth');
+}
+
+// Workout Daten
+const workouts = {{ workouts_json | safe }};
+
+let currentWorkout = null;
+let timerInterval = null;
+let currentStepIndex = 0;
+let stepTimeRemaining = 0;
+let totalElapsed = 0;
+let isPaused = false;
+let totalDuration = 45 * 60; // 45 Minuten
+
+function selectWorkout(id) {
+    initAudio();
+    document.getElementById('workout-select').style.display = 'none';
+    document.getElementById('timer-view').style.display = 'block';
+
+    if (id === 'free') {
+        currentWorkout = {
+            name: 'Freies Training',
+            steps: [{ name: 'Freies Training', detail: '45 Minuten – Dein Tempo, dein Kampf.', duration: 2700 }]
+        };
+    } else {
+        currentWorkout = workouts[id];
+    }
+
+    currentStepIndex = 0;
+    totalElapsed = 0;
+    isPaused = false;
+    loadStep(0);
+    updateTotalDisplay();
+    document.getElementById('timer-phase').textContent = currentWorkout.name;
+}
+
+function loadStep(index) {
+    if (index >= currentWorkout.steps.length) {
+        completeWorkout();
+        return;
+    }
+
+    const step = currentWorkout.steps[index];
+    stepTimeRemaining = step.duration;
+    document.getElementById('exercise-name').textContent = step.name;
+    document.getElementById('exercise-detail').textContent = step.detail || '';
+    document.getElementById('timer-display').textContent = formatTime(stepTimeRemaining);
+
+    // Phase anzeigen
+    document.getElementById('timer-phase').textContent = step.phase || currentWorkout.name;
+
+    // Nächste Übung
+    if (index + 1 < currentWorkout.steps.length) {
+        document.getElementById('next-exercise-name').textContent = currentWorkout.steps[index + 1].name;
+        document.getElementById('timer-next').style.display = 'block';
+    } else {
+        document.getElementById('timer-next').style.display = 'none';
+    }
+
+    // Runden
+    if (step.round && step.totalRounds) {
+        document.getElementById('current-round').textContent = step.round;
+        document.getElementById('total-rounds').textContent = step.totalRounds;
+        document.getElementById('timer-rounds').style.display = 'block';
+    } else {
+        document.getElementById('timer-rounds').style.display = 'none';
+    }
+
+    updateProgress();
+}
+
+function startTimer() {
+    initAudio();
+    soundPhaseChange();
+    document.getElementById('btn-start').style.display = 'none';
+    document.getElementById('btn-pause').style.display = 'inline-block';
+
+    timerInterval = setInterval(() => {
+        if (isPaused) return;
+
+        stepTimeRemaining--;
+        totalElapsed++;
+
+        document.getElementById('timer-display').textContent = formatTime(stepTimeRemaining);
+        updateTotalDisplay();
+        updateProgress();
+
+        // Countdown-Sound bei 3, 2, 1
+        if (stepTimeRemaining <= 3 && stepTimeRemaining > 0) {
+            soundCountdown();
+        }
+
+        if (stepTimeRemaining <= 0) {
+            currentStepIndex++;
+            if (currentStepIndex < currentWorkout.steps.length) {
+                soundExerciseChange();
+                loadStep(currentStepIndex);
+            } else {
+                completeWorkout();
+            }
+        }
+    }, 1000);
+}
+
+function pauseTimer() {
+    isPaused = true;
+    document.getElementById('btn-pause').style.display = 'none';
+    document.getElementById('btn-resume').style.display = 'inline-block';
+}
+
+function resumeTimer() {
+    isPaused = false;
+    document.getElementById('btn-resume').style.display = 'none';
+    document.getElementById('btn-pause').style.display = 'inline-block';
+}
+
+function skipExercise() {
+    currentStepIndex++;
+    if (currentStepIndex < currentWorkout.steps.length) {
+        soundExerciseChange();
+        loadStep(currentStepIndex);
+    } else {
+        completeWorkout();
+    }
+}
+
+function stopTimer() {
+    if (confirm('Workout wirklich abbrechen?')) {
+        clearInterval(timerInterval);
+        timerInterval = null;
+        document.getElementById('timer-view').style.display = 'none';
+        document.getElementById('workout-select').style.display = 'block';
+        resetControls();
+    }
+}
+
+function completeWorkout() {
+    clearInterval(timerInterval);
+    timerInterval = null;
+    soundComplete();
+
+    document.getElementById('timer-phase').textContent = '🏆 GESCHAFFT!';
+    document.getElementById('timer-display').textContent = '00:00';
+    document.getElementById('exercise-name').textContent = 'Workout abgeschlossen!';
+    document.getElementById('exercise-detail').textContent = 'Skål, Krieger! Du hast gekämpft und gewonnen.';
+    document.getElementById('timer-next').style.display = 'none';
+    document.getElementById('timer-rounds').style.display = 'none';
+    document.getElementById('timer-progress-fill').style.width = '100%';
+
+    document.getElementById('btn-pause').style.display = 'none';
+    document.getElementById('btn-resume').style.display = 'none';
+    document.getElementById('btn-skip').style.display = 'none';
+}
+
+function resetControls() {
+    document.getElementById('btn-start').style.display = 'inline-block';
+    document.getElementById('btn-pause').style.display = 'none';
+    document.getElementById('btn-resume').style.display = 'none';
+    document.getElementById('btn-skip').style.display = 'inline-block';
+}
+
+function updateTotalDisplay() {
+    document.getElementById('timer-total-elapsed').textContent = formatTime(totalElapsed);
+}
+
+function updateProgress() {
+    const pct = Math.min((totalElapsed / totalDuration) * 100, 100);
+    document.getElementById('timer-progress-fill').style.width = pct + '%';
+}
+
+function formatTime(seconds) {
+    const m = Math.floor(Math.abs(seconds) / 60);
+    const s = Math.abs(seconds) % 60;
+    return String(m).padStart(2, '0') + ':' + String(s).padStart(2, '0');
+}
+</script>
+
+<style>
+    .workout-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 0.75rem;
+    }
+
+    @media (max-width: 400px) {
+        .workout-grid { grid-template-columns: 1fr; }
+    }
+
+    .workout-btn {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 1rem 0.5rem;
+        background: #1a1a1a;
+        border: 1px solid #3a2a1a;
+        border-radius: 12px;
+        cursor: pointer;
+        transition: all 0.2s;
+        color: var(--text);
+    }
+
+    .workout-btn:hover {
+        border-color: #c9a227;
+        box-shadow: 0 0 12px rgba(201, 162, 39, 0.3);
+        transform: translateY(-2px);
+    }
+
+    .workout-btn.free-btn {
+        grid-column: 1 / -1;
+        border-color: #4ecdc4;
+    }
+
+    .workout-btn.free-btn:hover {
+        border-color: #4ecdc4;
+        box-shadow: 0 0 12px rgba(78, 205, 196, 0.3);
+    }
+
+    .workout-icon { font-size: 1.8rem; margin-bottom: 0.3rem; }
+    .workout-name { font-weight: 700; font-size: 0.9rem; }
+    .workout-week { font-size: 0.7rem; color: var(--text-muted); margin-top: 0.2rem; }
+
+    .timer-clock {
+        text-align: center;
+        padding: 1.5rem 0;
+    }
+
+    .timer-phase {
+        font-size: 0.9rem;
+        color: #c9a227;
+        text-transform: uppercase;
+        letter-spacing: 2px;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+    }
+
+    .timer-display {
+        font-size: 5rem;
+        font-weight: 900;
+        font-variant-numeric: tabular-nums;
+        color: var(--text);
+        line-height: 1;
+        text-shadow: 0 0 20px rgba(201, 162, 39, 0.3);
+    }
+
+    .timer-total {
+        font-size: 0.8rem;
+        color: var(--text-muted);
+        margin-top: 0.5rem;
+    }
+
+    .timer-progress {
+        width: 100%;
+        height: 6px;
+        background: #1a1a1a;
+        border-radius: 3px;
+        overflow: hidden;
+        margin: 1rem 0;
+    }
+
+    .timer-progress-fill {
+        height: 100%;
+        background: linear-gradient(90deg, #c9a227, #4ecdc4);
+        border-radius: 3px;
+        transition: width 1s linear;
+        width: 0%;
+    }
+
+    .timer-exercise {
+        text-align: center;
+        padding: 1.5rem;
+        background: #111;
+        border-radius: 12px;
+        border: 1px solid #2a2a2a;
+        margin: 1rem 0;
+    }
+
+    .exercise-label {
+        font-size: 0.7rem;
+        color: var(--text-muted);
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        margin-bottom: 0.5rem;
+    }
+
+    .exercise-name {
+        font-size: 1.4rem;
+        font-weight: 700;
+        color: #c9a227;
+        margin-bottom: 0.3rem;
+    }
+
+    .exercise-detail {
+        font-size: 0.85rem;
+        color: var(--text-muted);
+        line-height: 1.4;
+    }
+
+    .timer-next {
+        text-align: center;
+        padding: 0.5rem;
+        font-size: 0.8rem;
+        color: var(--text-muted);
+    }
+
+    .next-label { margin-right: 0.3rem; }
+    .next-name { color: var(--text); font-weight: 600; }
+
+    .timer-rounds {
+        text-align: center;
+        font-size: 0.85rem;
+        color: #c9a227;
+        font-weight: 600;
+        padding: 0.5rem;
+    }
+
+    .timer-controls {
+        display: flex;
+        justify-content: center;
+        gap: 0.75rem;
+        flex-wrap: wrap;
+        margin-top: 1.5rem;
+    }
+
+    .btn-timer {
+        padding: 0.75rem 1.25rem;
+        border: none;
+        border-radius: 8px;
+        font-size: 0.9rem;
+        font-weight: 700;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+
+    .btn-start { background: #4ecdc4; color: #0f0f0f; }
+    .btn-pause { background: #f0c040; color: #0f0f0f; }
+    .btn-resume { background: #4ecdc4; color: #0f0f0f; }
+    .btn-skip { background: #2a2a4a; color: var(--text); }
+    .btn-stop { background: #e94560; color: white; }
+
+    .btn-timer:hover { transform: scale(1.05); }
+</style>
+{% endblock %}

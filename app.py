@@ -7,6 +7,8 @@ from pathlib import Path
 
 from flask import Flask, jsonify, redirect, render_template, request, url_for
 
+from workouts import WORKOUT_DATA
+
 app = Flask(__name__)
 
 DATA_DIR = Path(os.environ.get("DATA_DIR", "data"))
@@ -211,6 +213,29 @@ def schlachtfeld():
 def defeated():
     """Niederlage-Seite nach 3 Fails."""
     return render_template("defeated.html")
+
+
+@app.route("/timer")
+def timer():
+    """Workout-Timer mit Übungsanleitung."""
+    workouts_list = [
+        {"id": "w1t1", "name": "Odin", "icon": "🦅", "week": "Woche 1 – Tag 1"},
+        {"id": "w1t2", "name": "Thor", "icon": "⚡", "week": "Woche 1 – Tag 2"},
+        {"id": "w1t3", "name": "Freya", "icon": "🌙", "week": "Woche 1 – Tag 3"},
+        {"id": "w2t1", "name": "Loki", "icon": "🔥", "week": "Woche 2 – Tag 1"},
+        {"id": "w2t2", "name": "Tyr", "icon": "🛡️", "week": "Woche 2 – Tag 2"},
+        {"id": "w2t3", "name": "Heimdall", "icon": "👁️", "week": "Woche 2 – Tag 3"},
+        {"id": "w3t1", "name": "Valkyrie", "icon": "⚔️", "week": "Woche 3 – Tag 1"},
+        {"id": "w3t2", "name": "Baldr", "icon": "☀️", "week": "Woche 3 – Tag 2"},
+        {"id": "w3t3", "name": "Thor+", "icon": "⚡", "week": "Woche 3 – Tag 3"},
+        {"id": "w4t1", "name": "Odin+", "icon": "🦅", "week": "Woche 4 – Tag 1"},
+        {"id": "w4t2", "name": "Loki+", "icon": "🔥", "week": "Woche 4 – Tag 2"},
+        {"id": "w4t3", "name": "Freya+", "icon": "🌙", "week": "Woche 4 – Tag 3"},
+    ]
+
+    workouts_json = json.dumps(WORKOUT_DATA, ensure_ascii=False)
+
+    return render_template("timer.html", workouts=workouts_list, workouts_json=workouts_json)
 
 
 @app.route("/history")
