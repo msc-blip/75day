@@ -1,0 +1,132 @@
+{% extends "base.html" %}
+
+{% block content %}
+{% if not started %}
+<div class="card start-screen">
+    <h2>Bist du bereit?</h2>
+    <p>75 Tage. Keine Ausreden. Keine Kompromisse.<br>
+    Jeden Tag alle Aufgaben erledigen – oder von vorne beginnen.</p>
+
+    <ul class="rules-list">
+        <li>2 Workouts à 45 Min (eines draußen)</li>
+        <li>Diät einhalten – kein Alkohol, keine Cheat Meals</li>
+        <li>4 Liter Wasser trinken</li>
+        <li>10 Seiten Sachbuch lesen</li>
+        <li>Fortschrittsfoto machen</li>
+    </ul>
+
+    <form method="POST" action="/start">
+        <button type="submit" class="btn btn-primary">Challenge starten</button>
+    </form>
+</div>
+{% else %}
+<nav>
+    <a href="/" class="active">Heute</a>
+    <a href="/history">Verlauf</a>
+</nav>
+
+<div class="card">
+    <div class="stats">
+        <div>
+            <div class="stat-number">{{ current_day }}</div>
+            <div class="stat-label">Tag</div>
+        </div>
+        <div>
+            <div class="stat-number">{{ completed_days }}</div>
+            <div class="stat-label">Geschafft</div>
+        </div>
+        <div>
+            <div class="stat-number">{{ 75 - current_day }}</div>
+            <div class="stat-label">Verbleibend</div>
+        </div>
+    </div>
+
+    <div class="progress-bar">
+        <div class="progress-bar-fill" style="width: {{ (current_day / 75 * 100) | round(1) }}%"></div>
+    </div>
+</div>
+
+<div class="card">
+    <ul class="task-list">
+        <li class="task-item">
+            <div class="task-icon">🏋️</div>
+            <div class="task-info">
+                <div class="task-name">Workout 1</div>
+                <div class="task-desc">45 Minuten Training</div>
+            </div>
+            <form method="POST" action="/toggle">
+                <input type="hidden" name="task" value="workout1">
+                <input type="hidden" name="day" value="{{ today_str }}">
+                <button type="submit" class="task-toggle {{ 'done' if today_data.get('workout1') }}"></button>
+            </form>
+        </li>
+        <li class="task-item">
+            <div class="task-icon">🌳</div>
+            <div class="task-info">
+                <div class="task-name">Workout 2 (Draußen)</div>
+                <div class="task-desc">45 Minuten Outdoor-Training</div>
+            </div>
+            <form method="POST" action="/toggle">
+                <input type="hidden" name="task" value="workout2">
+                <input type="hidden" name="day" value="{{ today_str }}">
+                <button type="submit" class="task-toggle {{ 'done' if today_data.get('workout2') }}"></button>
+            </form>
+        </li>
+        <li class="task-item">
+            <div class="task-icon">🥗</div>
+            <div class="task-info">
+                <div class="task-name">Diät eingehalten</div>
+                <div class="task-desc">Kein Alkohol, keine Cheat Meals</div>
+            </div>
+            <form method="POST" action="/toggle">
+                <input type="hidden" name="task" value="diaet">
+                <input type="hidden" name="day" value="{{ today_str }}">
+                <button type="submit" class="task-toggle {{ 'done' if today_data.get('diaet') }}"></button>
+            </form>
+        </li>
+        <li class="task-item">
+            <div class="task-icon">💧</div>
+            <div class="task-info">
+                <div class="task-name">4 Liter Wasser</div>
+                <div class="task-desc">Trinke mindestens 4 Liter</div>
+            </div>
+            <form method="POST" action="/toggle">
+                <input type="hidden" name="task" value="wasser">
+                <input type="hidden" name="day" value="{{ today_str }}">
+                <button type="submit" class="task-toggle {{ 'done' if today_data.get('wasser') }}"></button>
+            </form>
+        </li>
+        <li class="task-item">
+            <div class="task-icon">📖</div>
+            <div class="task-info">
+                <div class="task-name">10 Seiten lesen</div>
+                <div class="task-desc">Sachbuch, kein Hörbuch</div>
+            </div>
+            <form method="POST" action="/toggle">
+                <input type="hidden" name="task" value="lesen">
+                <input type="hidden" name="day" value="{{ today_str }}">
+                <button type="submit" class="task-toggle {{ 'done' if today_data.get('lesen') }}"></button>
+            </form>
+        </li>
+        <li class="task-item">
+            <div class="task-icon">📸</div>
+            <div class="task-info">
+                <div class="task-name">Fortschrittsfoto</div>
+                <div class="task-desc">Tägliches Foto für den Vergleich</div>
+            </div>
+            <form method="POST" action="/toggle">
+                <input type="hidden" name="task" value="foto">
+                <input type="hidden" name="day" value="{{ today_str }}">
+                <button type="submit" class="task-toggle {{ 'done' if today_data.get('foto') }}"></button>
+            </form>
+        </li>
+    </ul>
+</div>
+
+<div class="card" style="text-align: center;">
+    <form method="POST" action="/reset" onsubmit="return confirm('Wirklich zurücksetzen? Aller Fortschritt geht verloren!')">
+        <button type="submit" class="btn btn-danger">Challenge zurücksetzen</button>
+    </form>
+</div>
+{% endif %}
+{% endblock %}
