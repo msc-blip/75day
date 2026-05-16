@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+
+{% block content %}
+<nav>
+    <a href="/">Heute</a>
+    <a href="/schlachtfeld" class="active">⚔️ Schlachtfeld</a>
+    <a href="/history">Verlauf</a>
+</nav>
+
+<!-- Fail-Schädel Anzeige -->
+<div class="card viking-card">
+    <div class="skull-bar">
+        <span class="skull-title">☠️ Niederlagen</span>
+        <div class="skulls">
+            {% for i in range(max_fails) %}
+                {% if i < fails %}
+                    <span class="skull active">💀</span>
+                {% else %}
+                    <span class="skull">🦴</span>
+                {% endif %}
+            {% endfor %}
+        </div>
+        <span class="skull-warning">
+            {% if fails == 2 %}
+                ⚠️ Letzte Chance, Krieger!
+            {% elif fails == 1 %}
+                Ein Kratzer. Bleib stark.
+            {% else %}
+                Unbesiegt.
+            {% endif %}
+        </span>
+    </div>
+</div>
+
+<!-- Schlachtfeld Grid -->
+<div class="card viking-card">
+    <h3 class="viking-title">⚔️ Die 75 Tage des Kampfes</h3>
+    <p class="viking-subtitle">Jeder Strich ein eroberter Tag. Jeder Schädel eine Niederlage.</p>
+
+    <div class="battlefield-grid">
+        {% for day in days %}
+        <div class="day-rune {{ day.status }}" title="Tag {{ day.number }} – {{ day.date }}">
+            {% if day.status == 'done' %}
+                <span class="rune-mark">ᚦ</span>
+            {% elif day.status == 'fail' %}
+                <span class="rune-mark fail-mark">☠</span>
+            {% elif day.status == 'today' %}
+                <span class="rune-mark today-mark">⚔</span>
+            {% elif day.status == 'partial' %}
+                <span class="rune-mark partial-mark">◐</span>
+            {% elif day.status == 'missed' %}
+                <span class="rune-mark missed-mark">✗</span>
+            {% else %}
+                <span class="rune-mark future-mark">·</span>
+            {% endif %}
+            <span class="day-num">{{ day.number }}</span>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<!-- Legende -->
+<div class="card viking-card">
+    <h4 class="viking-subtitle" style="margin-bottom: 0.75rem;">Runen-Legende</h4>
+    <div class="legend">
+        <div class="legend-item"><span class="rune-mark" style="color: #4ecdc4;">ᚦ</span> Erobert</div>
+        <div class="legend-item"><span class="rune-mark" style="color: #e94560;">☠</span> Gefallen</div>
+        <div class="legend-item"><span class="rune-mark" style="color: #f0c040;">⚔</span> Heute</div>
+        <div class="legend-item"><span class="rune-mark" style="color: #8892b0;">◐</span> Teilweise</div>
+        <div class="legend-item"><span class="rune-mark" style="color: #555;">✗</span> Verpasst</div>
+        <div class="legend-item"><span class="rune-mark" style="color: #333;">·</span> Kommend</div>
+    </div>
+</div>
+
+<!-- Tag als Fail markieren -->
+<div class="card viking-card" style="text-align: center;">
+    <h4 class="viking-subtitle" style="margin-bottom: 1rem;">Tag als Niederlage markieren</h4>
+    <form method="POST" action="/fail" onsubmit="return confirm('Diesen Tag wirklich als FAIL markieren? Bei {{ max_fails }} Fails beginnt alles von vorne!')">
+        <input type="hidden" name="day" value="{{ days[-1].date if days and days[-1].status == 'today' else '' }}">
+        <button type="submit" class="btn btn-fail">💀 Heute ist gefallen</button>
+    </form>
+</div>
+
+{% endblock %}

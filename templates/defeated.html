@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="card viking-card" style="text-align: center; padding: 3rem 1.5rem;">
+    <div style="font-size: 4rem; margin-bottom: 1rem;">💀⚔️💀</div>
+    <h2 class="viking-title" style="color: var(--accent); margin-bottom: 1rem;">GEFALLEN IM KAMPF</h2>
+    <p style="color: var(--text-muted); margin-bottom: 0.5rem; font-size: 1.1rem;">
+        3 Niederlagen. Die Schlacht ist verloren.
+    </p>
+    <p style="color: var(--text-muted); margin-bottom: 2rem;">
+        Aber ein wahrer Krieger steht wieder auf.<br>
+        Sammle deine Kräfte und beginne erneut.
+    </p>
+
+    <div style="margin: 2rem 0; padding: 1.5rem; background: var(--surface2); border-radius: 12px; border-left: 4px solid var(--accent);">
+        <p style="font-style: italic; color: var(--text);">
+            „Wer kämpft, kann verlieren. Wer nicht kämpft, hat schon verloren."
+        </p>
+    </div>
+
+    <form method="POST" action="/start">
+        <button type="submit" class="btn btn-primary" style="margin-top: 1rem;">
+            ⚔️ Erneut in die Schlacht ziehen
+        </button>
+    </form>
+</div>
+{% endblock %}

@@ -22,6 +22,7 @@
 {% else %}
 <nav>
     <a href="/" class="active">Heute</a>
+    <a href="/schlachtfeld">⚔️ Schlachtfeld</a>
     <a href="/history">Verlauf</a>
 </nav>
 
@@ -43,6 +44,13 @@
 
     <div class="progress-bar">
         <div class="progress-bar-fill" style="width: {{ (current_day / 75 * 100) | round(1) }}%"></div>
+    </div>
+
+    <div style="text-align: center; margin-top: 0.5rem;">
+        <span style="color: var(--text-muted); font-size: 0.8rem;">
+            💀 Niederlagen: {{ fails }}/{{ max_fails }}
+            {% if fails >= 2 %} – <span style="color: var(--accent);">Letzte Chance!</span>{% endif %}
+        </span>
     </div>
 </div>
 

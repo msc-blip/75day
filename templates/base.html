@@ -295,6 +295,193 @@
             color: var(--text-muted);
             font-size: 0.8rem;
         }
+
+        /* ===== WIKINGER / SCHLACHTFELD STYLES ===== */
+
+        .viking-card {
+            background: linear-gradient(180deg, #1a1a1a 0%, #0d0d0d 100%);
+            border: 1px solid #3a2a1a;
+            position: relative;
+        }
+
+        .viking-card::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, transparent, #8b6914, #c9a227, #8b6914, transparent);
+        }
+
+        .viking-title {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: #c9a227;
+            text-align: center;
+            margin-bottom: 0.25rem;
+            letter-spacing: 1px;
+        }
+
+        .viking-subtitle {
+            color: var(--text-muted);
+            text-align: center;
+            font-size: 0.8rem;
+        }
+
+        .skull-bar {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .skull-title {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .skulls {
+            display: flex;
+            gap: 1rem;
+            font-size: 2rem;
+        }
+
+        .skull {
+            opacity: 0.3;
+            transition: all 0.3s;
+        }
+
+        .skull.active {
+            opacity: 1;
+            filter: drop-shadow(0 0 8px #e94560);
+        }
+
+        .skull-warning {
+            font-size: 0.8rem;
+            color: var(--accent);
+            font-weight: 600;
+        }
+
+        .battlefield-grid {
+            display: grid;
+            grid-template-columns: repeat(15, 1fr);
+            gap: 4px;
+            margin-top: 1.5rem;
+        }
+
+        @media (max-width: 500px) {
+            .battlefield-grid {
+                grid-template-columns: repeat(10, 1fr);
+            }
+        }
+
+        .day-rune {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            aspect-ratio: 1;
+            border-radius: 6px;
+            background: #1a1a1a;
+            border: 1px solid #2a2a2a;
+            cursor: default;
+            transition: all 0.2s;
+            position: relative;
+        }
+
+        .day-rune.done {
+            background: #0a2a2a;
+            border-color: #4ecdc4;
+            box-shadow: 0 0 4px rgba(78, 205, 196, 0.3);
+        }
+
+        .day-rune.fail {
+            background: #2a0a0a;
+            border-color: #e94560;
+            box-shadow: 0 0 6px rgba(233, 69, 96, 0.4);
+        }
+
+        .day-rune.today {
+            background: #2a2a0a;
+            border-color: #f0c040;
+            box-shadow: 0 0 8px rgba(240, 192, 64, 0.4);
+            animation: pulse-today 2s infinite;
+        }
+
+        .day-rune.partial {
+            background: #1a1a2a;
+            border-color: #5a5a8a;
+        }
+
+        .day-rune.missed {
+            background: #151515;
+            border-color: #333;
+        }
+
+        .day-rune.future {
+            background: #0d0d0d;
+            border-color: #1a1a1a;
+            opacity: 0.4;
+        }
+
+        @keyframes pulse-today {
+            0%, 100% { box-shadow: 0 0 8px rgba(240, 192, 64, 0.4); }
+            50% { box-shadow: 0 0 16px rgba(240, 192, 64, 0.7); }
+        }
+
+        .rune-mark {
+            font-size: 1rem;
+            line-height: 1;
+        }
+
+        .day-rune.done .rune-mark { color: #4ecdc4; }
+        .day-rune.fail .rune-mark { color: #e94560; }
+        .day-rune.today .rune-mark { color: #f0c040; }
+        .day-rune.partial .rune-mark { color: #8892b0; }
+        .day-rune.missed .rune-mark { color: #555; }
+        .day-rune.future .rune-mark { color: #333; }
+
+        .day-num {
+            font-size: 0.55rem;
+            color: var(--text-muted);
+            opacity: 0.6;
+            margin-top: 1px;
+        }
+
+        .legend {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 1rem;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+
+        .btn-fail {
+            background: linear-gradient(135deg, #8b0000, #e94560);
+            color: white;
+            padding: 0.75rem 2rem;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-fail:hover {
+            transform: scale(1.02);
+            box-shadow: 0 0 20px rgba(233, 69, 96, 0.4);
+        }
     </style>
 </head>
 <body>
