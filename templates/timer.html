@@ -18,7 +18,6 @@
         <button class="workout-btn" onclick="selectWorkout('{{ workout.id }}')" style="background-image: url('/static/img/{{ workout.image }}');">
             <div class="workout-overlay">
                 <span class="workout-name">{{ workout.name }}</span>
-                <span class="workout-week">{{ workout.week }}</span>
             </div>
         </button>
         {% endfor %}
