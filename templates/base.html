@@ -445,10 +445,12 @@
         .day-rune.future .rune-mark { color: #333; }
 
         .day-num {
-            font-size: 0.55rem;
-            color: var(--text-muted);
-            opacity: 0.6;
+            font-size: 0.6rem;
+            color: #ccc;
+            opacity: 0.9;
             margin-top: 1px;
+            font-weight: 600;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.8);
         }
 
         .legend {
@@ -481,6 +483,70 @@
         .btn-fail:hover {
             transform: scale(1.02);
             box-shadow: 0 0 20px rgba(233, 69, 96, 0.4);
+        }
+
+        /* ===== MEDAILLEN ===== */
+
+        .medals-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 0.75rem;
+        }
+
+        @media (max-width: 500px) {
+            .medals-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+
+        .medal-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            padding: 0.5rem;
+            border-radius: 10px;
+            transition: all 0.3s;
+        }
+
+        .medal-item.locked {
+            opacity: 0.3;
+            filter: grayscale(1);
+        }
+
+        .medal-item.earned {
+            opacity: 1;
+            filter: none;
+            animation: medal-glow 3s infinite;
+        }
+
+        @keyframes medal-glow {
+            0%, 100% { box-shadow: none; }
+            50% { box-shadow: 0 0 12px rgba(201, 162, 39, 0.4); }
+        }
+
+        .medal-img {
+            width: 56px;
+            height: 56px;
+            object-fit: contain;
+            margin-bottom: 0.3rem;
+        }
+
+        .medal-name {
+            font-size: 0.65rem;
+            font-weight: 700;
+            color: #c9a227;
+            line-height: 1.2;
+        }
+
+        .medal-item.locked .medal-name {
+            color: var(--text-muted);
+        }
+
+        .medal-req {
+            font-size: 0.55rem;
+            color: var(--text-muted);
+            margin-top: 0.15rem;
         }
     </style>
 </head>

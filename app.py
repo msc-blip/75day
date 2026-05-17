@@ -252,12 +252,33 @@ def schlachtfeld():
     current_day = get_current_day(data)
     fails = data.get("fails", 0)
 
+    # Abgeschlossene Tage zählen
+    completed_days = sum(1 for d in days if d["status"] == "done")
+
+    # Medaillen-System
+    medals = [
+        {"name": "Odin", "image": "medalie-odin.png", "requirement": "Tag 3", "days_needed": 3},
+        {"name": "Thor", "image": "medalie-thor.png", "requirement": "Tag 6", "days_needed": 6},
+        {"name": "Freya", "image": "medalie-fraya.png", "requirement": "Tag 9", "days_needed": 9},
+        {"name": "Loki", "image": "medalie-loki.png", "requirement": "Tag 12", "days_needed": 12},
+        {"name": "Tyr", "image": "medalie-tyr.png", "requirement": "Tag 15", "days_needed": 15},
+        {"name": "Heimdall", "image": "medialie-heimdall.png", "requirement": "Tag 18", "days_needed": 18},
+        {"name": "Valkyrie", "image": "medalie-valkyrie.png", "requirement": "Tag 21", "days_needed": 21},
+        {"name": "Baldr", "image": "medalie-baldr.png", "requirement": "Tag 27", "days_needed": 27},
+        {"name": "Midgard-\nschlange", "image": "medalie-midgartschlange.png", "requirement": "Tag 33", "days_needed": 33},
+        {"name": "Finisher", "image": "medalie-finischer.png", "requirement": "Tag 75", "days_needed": 75},
+    ]
+
+    for medal in medals:
+        medal["earned"] = completed_days >= medal["days_needed"]
+
     return render_template(
         "schlachtfeld.html",
         days=days,
         current_day=current_day,
         fails=fails,
         max_fails=MAX_FAILS,
+        medals=medals,
         data=data,
     )
 

@@ -33,6 +33,22 @@
     </div>
 </div>
 
+<!-- Medaillen -->
+<div class="card viking-card">
+    <h3 class="viking-title">🏅 Medaillen</h3>
+    <p class="viking-subtitle" style="margin-bottom: 1rem;">Erringe die Gunst der Götter.</p>
+
+    <div class="medals-grid">
+        {% for medal in medals %}
+        <div class="medal-item {{ 'earned' if medal.earned else 'locked' }}">
+            <img src="/static/img/{{ medal.image }}" alt="{{ medal.name }}" class="medal-img">
+            <span class="medal-name">{{ medal.name }}</span>
+            <span class="medal-req">{{ medal.requirement }}</span>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
 <!-- Schlachtfeld Grid -->
 <div class="card viking-card">
     <h3 class="viking-title">⚔️ Die 75 Tage des Kampfes</h3>
