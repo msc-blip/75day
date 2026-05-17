@@ -13,4 +13,4 @@ ENV PORT=5000
 
 EXPOSE ${PORT}
 
-CMD gunicorn --bind 0.0.0.0:${PORT} app:app
+CMD gunicorn --bind 0.0.0.0:${PORT} --log-level warning app:app
