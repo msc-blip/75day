@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="card viking-card" style="max-width: 360px; margin: 2rem auto; text-align: center;">
+    <h2 class="viking-title" style="margin-bottom: 1.5rem;">⚔️ Einloggen</h2>
+    <p class="viking-subtitle" style="margin-bottom: 1.5rem;">Identifiziere dich, Krieger.</p>
+
+    {% if error %}
+    <div style="background: rgba(233, 69, 96, 0.15); border: 1px solid var(--accent); border-radius: 8px; padding: 0.75rem; margin-bottom: 1rem; color: var(--accent); font-size: 0.85rem;">
+        {{ error }}
+    </div>
+    {% endif %}
+
+    <form method="POST" action="/login">
+        <div style="margin-bottom: 1rem; text-align: left;">
+            <label for="username" style="font-size: 0.8rem; color: var(--text-muted); display: block; margin-bottom: 0.3rem;">Benutzername</label>
+            <input type="text" id="username" name="username" required autocomplete="username"
+                style="width: 100%; padding: 0.75rem; background: #111; border: 1px solid var(--border); border-radius: 8px; color: var(--text); font-size: 1rem;">
+        </div>
+        <div style="margin-bottom: 1.5rem; text-align: left;">
+            <label for="password" style="font-size: 0.8rem; color: var(--text-muted); display: block; margin-bottom: 0.3rem;">Passwort</label>
+            <input type="password" id="password" name="password" required autocomplete="current-password"
+                style="width: 100%; padding: 0.75rem; background: #111; border: 1px solid var(--border); border-radius: 8px; color: var(--text); font-size: 1rem;">
+        </div>
+        <button type="submit" class="btn btn-primary">Eintreten</button>
+    </form>
+</div>
+{% endblock %}

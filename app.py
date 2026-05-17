@@ -1,21 +1,41 @@
 """75 Hard Tracker – Deutsche Web-App im Wikinger-Stil."""
 
+import hashlib
 import json
 import os
 from datetime import date, datetime, timedelta
+from functools import wraps
 from pathlib import Path
 
-from flask import Flask, jsonify, redirect, render_template, request, url_for
+from flask import (
+    Flask, jsonify, redirect, render_template, request, session, url_for
+)
 
 from workouts import WORKOUT_DATA
 
 app = Flask(__name__)
+app.secret_key = os.environ.get("SECRET_KEY", "vikinger-75hard-geheim-2024")
 
 DATA_DIR = Path(os.environ.get("DATA_DIR", "data"))
 DATA_FILE = DATA_DIR / "progress.json"
 
 TASKS = ["workout1", "workout2", "diaet", "wasser", "lesen", "foto"]
 MAX_FAILS = 3
+
+# Login-Daten (Passwort als Hash gespeichert)
+USERS = {
+    "msc": hashlib.sha256("Wassollichdennnehmen!9".encode()).hexdigest()
+}
+
+
+def login_required(f):
+    """Decorator: Seite nur für eingeloggte User."""
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        if not session.get("logged_in"):
+            return redirect(url_for("login"))
+        return f(*args, **kwargs)
+    return decorated
 
 
 def load_data() -> dict:
@@ -80,7 +100,34 @@ def get_days_overview(data: dict) -> list:
     return days
 
 
+@app.route("/login", methods=["GET", "POST"])
+def login():
+    """Login-Seite."""
+    error = None
+    if request.method == "POST":
+        username = request.form.get("username", "")
+        password = request.form.get("password", "")
+        pw_hash = hashlib.sha256(password.encode()).hexdigest()
+
+        if username in USERS and USERS[username] == pw_hash:
+            session["logged_in"] = True
+            session["user"] = username
+            return redirect(url_for("index"))
+        else:
+            error = "Falscher Benutzername oder Passwort."
+
+    return render_template("login.html", error=error)
+
+
+@app.route("/logout")
+def logout():
+    """Ausloggen."""
+    session.clear()
+    return redirect(url_for("login"))
+
+
 @app.route("/")
+@login_required
 def index():
     """Hauptseite mit Tagesübersicht."""
     data = load_data()
@@ -110,6 +157,7 @@ def index():
 
 
 @app.route("/start", methods=["POST"])
+@login_required
 def start_challenge():
     """Starte die 75 Hard Challenge."""
     data = load_data()
@@ -122,6 +170,7 @@ def start_challenge():
 
 
 @app.route("/reset", methods=["POST"])
+@login_required
 def reset_challenge():
     """Challenge zurücksetzen (Neustart)."""
     data = {"start_date": None, "days": {}, "fails": 0, "fail_dates": []}
@@ -130,6 +179,7 @@ def reset_challenge():
 
 
 @app.route("/toggle", methods=["POST"])
+@login_required
 def toggle_task():
     """Aufgabe als erledigt/nicht erledigt markieren."""
     task = request.form.get("task")
@@ -150,6 +200,7 @@ def toggle_task():
 
 
 @app.route("/fail", methods=["POST"])
+@login_required
 def mark_fail():
     """Tag als Fail markieren. Nach 3 Fails wird zurückgesetzt."""
     day = request.form.get("day", date.today().isoformat())
@@ -175,6 +226,7 @@ def mark_fail():
 
 
 @app.route("/unfail", methods=["POST"])
+@login_required
 def unmark_fail():
     """Fail-Markierung entfernen."""
     day = request.form.get("day")
@@ -189,6 +241,7 @@ def unmark_fail():
 
 
 @app.route("/schlachtfeld")
+@login_required
 def schlachtfeld():
     """Schlachtfeld-Ansicht: 75 Tage als Wikinger-Strichliste."""
     data = load_data()
@@ -210,12 +263,14 @@ def schlachtfeld():
 
 
 @app.route("/defeated")
+@login_required
 def defeated():
     """Niederlage-Seite nach 3 Fails."""
     return render_template("defeated.html")
 
 
 @app.route("/timer")
+@login_required
 def timer():
     """Workout-Timer mit Übungsanleitung."""
     workouts_list = [
@@ -239,6 +294,7 @@ def timer():
 
 
 @app.route("/history")
+@login_required
 def history():
     """Verlauf aller Tage anzeigen."""
     data = load_data()
